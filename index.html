@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1d1029">
+<title>Meydan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
+<link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="rotate"><div class="phone"></div><b>Telefonu yan çevir</b></div>
+
+<div id="app">
+  <!-- açılış -->
+  <section id="s-loading" class="screen show">
+    <img class="logo-img" src="assets/logo.webp" alt="MEYDAN">
+    <div class="bar"><i id="loadBar"></i></div>
+    <div class="tip" id="loadTip">Mahalle ısınıyor...</div>
+  </section>
+
+  <!-- isim -->
+  <section id="s-name" class="screen">
+    <img class="logo-img small" src="assets/logo.webp" alt="MEYDAN">
+    <div class="panel">
+      <h2>Meydana hoş geldin!</h2>
+      <p>Seni nasıl çağıralım?</p>
+      <input id="nameIn" maxlength="14" placeholder="Oyuncu adın" autocomplete="off">
+      <button class="btn yellow" id="nameOk">DEVAM</button>
+    </div>
+  </section>
+
+  <!-- ana menü -->
+  <section id="s-home" class="screen">
+    <div class="topbar">
+      <div class="me-card"><div class="avatar" id="hAvatar"></div><div><b id="hName">Oyuncu</b><small id="hStatus">Bağlanıyor...</small></div></div>
+      <div class="trophy"><img src="assets/ic_trophy.webp" alt=""><b id="hTrophy">0</b></div>
+      <img class="home-logo" src="assets/logo.webp" alt="">
+      <button class="icon" id="bSettings">⚙️</button>
+    </div>
+    <div class="home-left">
+      <button class="side" id="bChars"><span>🧑‍🤝‍🧑</span>KAHRAMANLAR</button>
+      <button class="side" id="bFriend"><span>🤝</span>ARKADAŞLA OYNA</button>
+      <button class="side" id="bBot"><span>🤖</span>ANTRENMAN</button>
+      <button class="side" id="bBoard"><span>🏅</span>SIRALAMA</button>
+    </div>
+    <div class="home-center">
+      <div class="hero-stage"><div class="pedestal"></div><img id="heroImg" alt=""></div>
+      <div class="hero-name" id="hHero">Çaycı Abi</div>
+      <div class="hero-role" id="hRole">Yakın Dövüşçü</div>
+    </div>
+    <div class="home-right">
+      <div class="mode-card"><img src="assets/md_duel.webp" alt=""><div><small>MOD</small><b>DÜELLO 1v1</b><span>Kapalıçarşı</span></div></div>
+      <button class="btn play" id="bPlay">OYNA</button>
+    </div>
+  </section>
+
+  <!-- karakterler -->
+  <section id="s-chars" class="screen">
+    <div class="head"><button class="back" data-back>‹</button><h2>KAHRAMANLAR</h2></div>
+    <div class="chars-wrap">
+      <div class="char-grid" id="charGrid"></div>
+      <div class="char-detail" id="charDetail"></div>
+    </div>
+  </section>
+
+  <!-- rakip arama -->
+  <section id="s-search" class="screen">
+    <div class="search-box">
+      <div class="spinner"></div>
+      <h2 id="sTitle">Rakip aranıyor...</h2>
+      <p id="sInfo">Meydanda biri var mı bakıyoruz</p>
+      <div class="sTime" id="sTime">0:00</div>
+      <div class="row">
+        <button class="btn red" id="sCancel">VAZGEÇ</button>
+        <button class="btn yellow hidden" id="sBot">BOTA KARŞI OYNA</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- arkadaş -->
+  <section id="s-friend" class="screen">
+    <div class="head"><button class="back" data-back>‹</button><h2>ARKADAŞLA OYNA</h2></div>
+    <div class="friend-wrap">
+      <div class="panel">
+        <h3>Oda Kur</h3>
+        <p>Kodu arkadaşına söyle, o da girsin.</p>
+        <div class="code" id="fCode">----</div>
+        <button class="btn yellow" id="fCreate">ODA KUR</button>
+      </div>
+      <div class="panel">
+        <h3>Odaya Katıl</h3>
+        <p>Arkadaşının verdiği 4 haneli kod:</p>
+        <input id="fIn" inputmode="numeric" maxlength="4" placeholder="1234">
+        <button class="btn blue" id="fJoin">KATIL</button>
+      </div>
+    </div>
+    <div class="fStatus" id="fStatus"></div>
+  </section>
+
+  <!-- sıralama -->
+  <section id="s-board" class="screen">
+    <div class="head"><button class="back" data-back>‹</button><h2>SIRALAMA</h2></div>
+    <div class="board" id="boardList"></div>
+  </section>
+
+  <!-- sonuç -->
+  <section id="s-result" class="screen">
+    <div class="result">
+      <div class="r-title" id="rTitle">KAZANDIN!</div>
+      <div class="r-hero"><img id="rHero" alt=""></div>
+      <div class="r-score" id="rScore">2 - 1</div>
+      <div class="r-trophy" id="rTrophy">🏆 +8</div>
+      <div class="row">
+        <button class="btn blue" id="rHome">ANA MENÜ</button>
+        <button class="btn yellow" id="rAgain">TEKRAR OYNA</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ayarlar -->
+  <div id="m-settings" class="modal">
+    <div class="panel">
+      <h3>Ayarlar</h3>
+      <label class="tog"><input type="checkbox" id="optSfx"><span>Efekt sesleri</span></label>
+      <label class="tog"><input type="checkbox" id="optMusic"><span>Müzik</span></label>
+      <button class="btn blue" id="optName">İSMİ DEĞİŞTİR</button>
+      <button class="btn blue" id="optUpd">GÜNCELLEMEYİ KONTROL ET</button>
+      <p id="optVer" style="font-size:12px;opacity:.6"></p>
+      <button class="btn yellow" data-close>TAMAM</button>
+    </div>
+  </div>
+  <!-- güncelleme -->
+  <div id="m-update" class="modal">
+    <div class="panel">
+      <h3>🎉 Yeni güncelleme var!</h3>
+      <p id="uInfo">Sürüm</p>
+      <p id="uNotes" style="font-size:13px;opacity:.7;max-width:320px"></p>
+      <div class="row"><button class="btn blue" data-close>SONRA</button><button class="btn yellow" id="uGo">GÜNCELLE</button></div>
+      <p style="font-size:12px;opacity:.6;max-width:320px">İnen dosyayı açıp "Güncelle"ye bas. Kupaların ve ismin kaybolmaz.</p>
+    </div>
+  </div>
+  <!-- maçtan çık -->
+  <div id="m-quit" class="modal">
+    <div class="panel">
+      <h3>Maçtan çıkılsın mı?</h3>
+      <p id="qInfo">Çıkarsan maçı kaybetmiş sayılırsın.</p>
+      <div class="row"><button class="btn blue" data-close>DEVAM ET</button><button class="btn red" id="qYes">ÇIK</button></div>
+    </div>
+  </div>
+  <button id="bQuit" class="icon quit hidden">✕</button>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

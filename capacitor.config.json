@@ -1,0 +1,6 @@
+{
+  "appId": "com.mitturkeyhack.meydan",
+  "appName": "Meydan",
+  "webDir": "dist",
+  "android": { "backgroundColor": "#1d1029" }
+}

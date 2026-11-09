@@ -1,0 +1,61 @@
+name: Meydan APK
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VER: 1.0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Paketleri kur
+        run: npm install
+      - name: Oyunu derle
+        run: npm run build
+      - name: Android projesi oluştur
+        run: npx cap add android
+      - name: Türk bayrağı simgesi ve açılış ekranı
+        run: npx @capacitor/assets generate --android --assetPath assets --androidSplashBackgroundColor '#e30a17' --iconBackgroundColor '#e30a17'
+      - name: Yatay ekran, tam ekran ve sürüm numarası
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' $M
+          S=android/app/src/main/res/values/styles.xml
+          sed -i 's#<item name="windowActionBar">false</item>#<item name="windowActionBar">false</item><item name="android:windowFullscreen">true</item>#' $S
+          G=android/app/build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" $G
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$VER\"/" $G
+      - name: Senkronla
+        run: npx cap sync android
+      - name: Sabit imza anahtarı (güncellemelerin üstüne kurulabilmesi için)
+        run: mkdir -p ~/.android && cp signing/debug.keystore ~/.android/debug.keystore
+      - name: APK derle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../Meydan-v$VER.apk
+      - name: APK'yı yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Meydan-APK
+          path: Meydan-v${{ env.VER }}.apk
+      - name: Sürüm yayınla (uygulama içi güncelleme buradan okur)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VER }}
+          name: Meydan v${{ env.VER }}
+          body: ${{ github.event.head_commit.message }}
+          files: Meydan-v${{ env.VER }}.apk
+          make_latest: true
