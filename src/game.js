@@ -1,5 +1,5 @@
 // ===== MEYDAN — maç motoru: hareket, dövüş, efektler, bot, ağ senkronu =====
-import { T, MAX_AMMO, ROUND_TIME, TOZ_START, WIN_ROUNDS, CHARS, MAPS } from './config.js';
+import { T, MAX_AMMO, ROUND_TIME, TOZ_START, WIN_ROUNDS, CHARS, MAPS, LEVEL_BONUS } from './config.js';
 import { drawChar, drawShadow, drawTeaGlass, drawSimit, drawTomato, drawSemaver, rr, circ, ell, fs, grad, OUT } from './art.js';
 import { sfx, music } from './audio.js';
 import { IMG, whiteOf } from './assets.js';
@@ -108,7 +108,8 @@ export class Game {
   // ---------- oyuncular ----------
   mkPlayer(info, side, local) {
     const c = CHARS[info.char] || CHARS.cayci;
-    return { name: info.name || 'Oyuncu', char: c.id, c, side, local, x: 0, y: 0, tx: 0, ty: 0, hp: c.hp, maxhp: c.hp,
+    const lvl = Math.max(1, Math.min(10, info.lvl || 1)), mul = 1 + LEVEL_BONUS * (lvl - 1), mhp = Math.round(c.hp * mul);
+    return { name: info.name || 'Oyuncu', char: c.id, c, side, local, lvl, dmgMul: mul, x: 0, y: 0, tx: 0, ty: 0, hp: mhp, maxhp: mhp,
       ammo: MAX_AMMO, gaz: 0, aim: side === 1 ? 0.5 : Math.PI + 0.5, moving: false, walk: 0, lastAtk: -9, lastHurt: -9,
       flash: 0, alive: true, jump: null, inBush: false, gazFullFx: false, trophies: info.trophies || 0, stepT: 0 };
   }
@@ -199,7 +200,8 @@ export class Game {
     return true;
   }
   fire(p, kind, ang, tx, ty, origin) {
-    const isSup = kind === 'sup', spec = isSup ? p.c.super : p.c.attack;
+    const isSup = kind === 'sup', base = isSup ? p.c.super : p.c.attack;
+    const spec = { ...base, dmg: Math.round(base.dmg * (p.dmgMul || 1)), burn: base.burn ? { ...base.burn, dps: base.burn.dps * (p.dmgMul || 1) } : null };
     const ox = origin ? origin.x : p.x, oy = origin ? origin.y : p.y;
     p.lastAtk = this.t; p.aim = ang; p.atkT = this.t;
     const gazPer = isSup ? 0 : 1 / p.c.superHits;
@@ -866,7 +868,8 @@ export class Game {
     const x = p.x, y = p.y - (p.z || 0) - (IMG['ch_' + p.char] ? (SPR_H[p.char] || 110) + 16 : 92);
     const w = 72, h = 12, k = clamp(p.hp / p.maxhp, 0, 1);
     ctx.font = '800 13px "Lilita One", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = OUT;
-    ctx.strokeText(p.name, x, y - 7); ctx.fillStyle = p === this.me ? '#bfe3ff' : '#ffc2c2'; ctx.fillText(p.name, x, y - 7);
+    const nm = p.name + (p.lvl > 1 ? ' · ' + p.lvl : '');
+    ctx.strokeText(nm, x, y - 7); ctx.fillStyle = p === this.me ? '#bfe3ff' : '#ffc2c2'; ctx.fillText(nm, x, y - 7);
     rr(ctx, x - w / 2, y, w, h, 5); ctx.fillStyle = OUT; ctx.fill();
     rr(ctx, x - w / 2 + 2, y + 2, (w - 4) * k, h - 4, 3); ctx.fillStyle = p === this.me ? '#4cd964' : '#ff4d4d'; ctx.fill();
     ctx.font = '800 10px system-ui, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(Math.ceil(p.hp), x, y + 9.5);

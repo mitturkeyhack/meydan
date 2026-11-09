@@ -25,11 +25,17 @@ export async function register(name) {
   if (error) throw error;
   return Array.isArray(data) ? data[0] : data;
 }
-export async function report(won, char, opponent) {
-  const { data, error } = await sb.rpc('meydan_report', { p_key: deviceKey(), p_won: won, p_char: char, p_opponent: opponent, p_mode: 'duello' });
+async function call(fn, args = {}) {
+  const { data, error } = await sb.rpc(fn, { p_key: deviceKey(), ...args });
   if (error) throw error;
   return Array.isArray(data) ? data[0] : data;
 }
+export const report = (won, char, opponent, mode = 'duello') => call('meydan_report', { p_won: won, p_char: char, p_opponent: opponent, p_mode: mode });
+export const profile = () => call('meydan_profile');
+export const openBohca = () => call('meydan_open_bohca');
+export const upgrade = (char) => call('meydan_upgrade', { p_char: char });
+export const claimRoad = (i) => call('meydan_claim_road', { p_idx: i });
+export const claimQuest = (i) => call('meydan_claim_quest', { p_idx: i });
 export async function leaderboard() {
   const { data, error } = await sb.rpc('meydan_leaderboard');
   if (error) throw error;
@@ -50,7 +56,7 @@ export function joinRoom(name, me, { onReady, onError }) {
       setTimeout(() => sb.removeChannel(ch).catch(() => {}), 300);
     },
   };
-  const hello = () => room.send('hello', { id: myId, name: me.name, char: me.char, trophies: me.trophies || 0, seen: opp ? 1 : 0 });
+  const hello = () => room.send('hello', { id: myId, name: me.name, char: me.char, lvl: me.lvl || 1, trophies: me.trophies || 0, seen: opp ? 1 : 0 });
   ch.on('broadcast', { event: 'm' }, ({ payload }) => {
     if (!payload || dead) return;
     const { y, p } = payload;

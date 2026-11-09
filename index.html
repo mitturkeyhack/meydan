@@ -36,26 +36,61 @@
   <section id="s-home" class="screen">
     <div class="topbar">
       <div class="me-card"><div class="avatar" id="hAvatar"></div><div><b id="hName">Oyuncu</b><small id="hStatus">Bağlanıyor...</small></div></div>
-      <div class="trophy"><img src="assets/ic_trophy.webp" alt=""><b id="hTrophy">0</b></div>
+      <button class="pill" id="pTrophy"><img src="assets/ic_trophy.webp" alt=""><b id="hTrophy">0</b></button>
+      <div class="pill"><img src="assets/it_akce.webp" alt=""><b id="hAkce">0</b></div>
+      <div class="pill"><img src="assets/it_nazar.webp" alt=""><b id="hNazar">0</b></div>
       <img class="home-logo" src="assets/logo.webp" alt="">
       <button class="icon" id="bSettings">⚙️</button>
     </div>
     <div class="home-left">
-      <button class="side" id="bChars"><span>🧑‍🤝‍🧑</span>KAHRAMANLAR</button>
-      <button class="side" id="bFriend"><span>🤝</span>ARKADAŞLA OYNA</button>
-      <button class="side" id="bBot"><span>🤖</span>ANTRENMAN</button>
-      <button class="side" id="bBoard"><span>🏅</span>SIRALAMA</button>
+      <button class="tile red" id="bBohca"><img src="assets/it_bohca.webp" alt=""><span>BOHÇA</span><i class="badge" id="bdBohca"></i></button>
+      <button class="tile green" id="bQuests"><span class="emo">📜</span><span>GÖREVLER</span><i class="badge" id="bdQuest"></i></button>
+      <button class="tile blue" id="bChars"><img id="tileHero" alt=""><span>KAHRAMAN</span></button>
+      <button class="tile purple" id="bFriend"><span class="emo">🤝</span><span>ARKADAŞ</span></button>
+      <button class="tile gold" id="bBoard"><img src="assets/ic_trophy.webp" alt=""><span>SIRALAMA</span></button>
+      <button class="tile gray" id="bBot"><span class="emo">🤖</span><span>ANTRENMAN</span></button>
     </div>
     <div class="home-center">
-      <div class="hero-stage"><div class="pedestal"></div><img id="heroImg" alt=""></div>
+      <div class="hero-stage"><div class="pedestal"></div><img id="heroImg" alt=""><div class="lv-badge" id="hLevel">1</div></div>
       <div class="hero-name" id="hHero">Çaycı Abi</div>
       <div class="hero-role" id="hRole">Yakın Dövüşçü</div>
     </div>
     <div class="home-right">
+      <button class="road-card" id="bRoad"><div class="rc-top"><b>MEYDAN YOLU</b><span id="rcNext">Sonraki: 10 🏆</span></div><div class="rc-bar"><i id="rcFill"></i></div><i class="badge" id="bdRoad"></i></button>
       <div class="mode-card"><img src="assets/md_duel.webp" alt=""><div><small>MOD</small><b>DÜELLO 1v1</b><span>Kapalıçarşı</span></div></div>
       <button class="btn play" id="bPlay">OYNA</button>
     </div>
   </section>
+
+  <!-- bohça açma -->
+  <section id="s-bohca" class="screen">
+    <div class="head"><button class="back" data-back>‹</button><h2>BOHÇALAR</h2><div class="pill right"><img src="assets/it_bohca.webp" alt=""><b id="bxCount">0</b></div></div>
+    <div class="bx-stage">
+      <div class="rays" id="bxRays"></div>
+      <img id="bxImg" src="assets/it_bohca.webp" alt="">
+      <div class="bx-reward" id="bxReward"><img id="bxRImg" alt=""><b id="bxRAmt">+0</b><span id="bxRName"></span></div>
+    </div>
+    <div class="bx-hint" id="bxHint">Bohçaya dokun, aç!</div>
+    <div class="row bx-btns"><button class="btn yellow hidden" id="bxAgain">BİR TANE DAHA</button><button class="btn blue hidden" id="bxDone">TAMAM</button></div>
+  </section>
+
+  <!-- meydan yolu -->
+  <section id="s-road" class="screen">
+    <div class="head"><button class="back" data-back>‹</button><h2>MEYDAN YOLU</h2><div class="pill right"><img src="assets/ic_trophy.webp" alt=""><b id="rdTrophy">0</b></div></div>
+    <div class="road" id="roadList"></div>
+  </section>
+
+  <!-- görevler -->
+  <section id="s-quests" class="screen">
+    <div class="head"><button class="back" data-back>‹</button><h2>GÜNLÜK GÖREVLER</h2></div>
+    <div class="quests" id="questList"></div>
+    <div class="q-foot">Görevler her gün gece yarısı yenilenir.</div>
+  </section>
+
+  <!-- ödül penceresi -->
+  <div id="m-reward" class="modal">
+    <div class="reward-pop"><div class="rays small"></div><img id="rwImg" alt=""><b id="rwAmt">+0</b><span id="rwName"></span><button class="btn yellow" data-close>TOPLA</button></div>
+  </div>
 
   <!-- karakterler -->
   <section id="s-chars" class="screen">

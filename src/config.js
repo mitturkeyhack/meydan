@@ -92,3 +92,16 @@ export const MAPS = {
     },
   },
 };
+
+// ===== İlerleme =====
+export const LEVEL_BONUS = 0.06;      // her seviye: +%6 can ve hasar
+export const MAX_LEVEL = 10;
+export const upgradeCost = (lv) => 40 * lv;
+// Meydan Yolu (sunucudaki meydan__road ile aynı olmalı)
+export const ROAD = [
+  { need: 10, rt: 'akce', ra: 50 }, { need: 25, rt: 'bohca', ra: 1 }, { need: 50, rt: 'nazar', ra: 20 },
+  { need: 80, rt: 'akce', ra: 100 }, { need: 120, rt: 'bohca', ra: 2 }, { need: 170, rt: 'nazar', ra: 40 },
+  { need: 230, rt: 'akce', ra: 200 }, { need: 300, rt: 'bohca', ra: 3 }, { need: 400, rt: 'nazar', ra: 80 },
+  { need: 500, rt: 'akce', ra: 400 },
+];
+export const REWARD = { akce: { img: 'it_akce', name: 'Akçe' }, nazar: { img: 'it_nazar', name: 'Nazar Boncuğu' }, bohca: { img: 'it_bohca', name: 'Bohça' } };

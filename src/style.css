@@ -165,3 +165,104 @@ input{font:inherit;font-size:22px;padding:10px 14px;border-radius:12px;border:3p
 @keyframes halay{0%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(0) translateY(-8%)}100%{transform:rotate(7deg) translateY(0)}}
 .r-title:not(.lose){animation:pop .5s cubic-bezier(.2,1.6,.4,1),glow 1.2s ease-in-out infinite alternate}
 @keyframes glow{from{filter:drop-shadow(0 0 0 #ffe066)}to{filter:drop-shadow(0 0 18px #ffe066)}}
+
+/* ===== Brawl tarzı ana menü v2 ===== */
+#s-home.show{grid-template-columns:auto 1fr auto}
+.pill{display:flex;align-items:center;gap:6px;background:linear-gradient(#2e1d4f,#1d1029);border:3px solid #1d1029;border-radius:14px;padding:4px 14px 4px 6px;font:inherit;font-size:19px;color:#fff;box-shadow:0 4px 0 #0e0716,inset 0 2px 0 rgba(255,255,255,.1)}
+.pill img{width:30px;height:30px;object-fit:contain}
+.pill b{font-weight:400;min-width:28px;text-align:left}
+button.pill{cursor:pointer}
+.pill.right{margin-left:auto}
+.topbar .home-logo{margin:0 auto}
+.home-left{display:grid;grid-template-columns:repeat(2,minmax(78px,96px));gap:9px;align-content:center}
+.tile{position:relative;aspect-ratio:1;border-radius:16px;border:3px solid #1d1029;box-shadow:0 5px 0 #1d1029,inset 0 -5px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,255,255,.3);color:#fff;font:inherit;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;text-shadow:0 2px 0 #1d1029}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 #1d1029}
+.tile img{width:62%;height:56%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
+.tile .emo{font-size:32px;line-height:1.1}
+.tile.red{background:linear-gradient(#ff6f5e,#c62828)}.tile.green{background:linear-gradient(#5fd67a,#239b45)}
+.tile.blue{background:linear-gradient(#5cc2ff,#2a7fd6)}.tile.purple{background:linear-gradient(#b07bff,#6d3bc4)}
+.tile.gold{background:linear-gradient(#ffd66b,#e39b12)}.tile.gray{background:linear-gradient(#8a86a8,#55507a)}
+#tileHero{object-position:50% 0;width:80%;height:60%;object-fit:cover;border-radius:10px}
+.badge{position:absolute;top:-8px;right:-8px;min-width:26px;height:26px;border-radius:13px;background:#ff2d2d;border:3px solid #1d1029;font-style:normal;font-size:14px;display:none;align-items:center;justify-content:center;padding:0 5px;animation:bump 1s ease-in-out infinite}
+.badge.on{display:flex}
+@keyframes bump{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.lv-badge{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);background:linear-gradient(#a26bff,#5b2ab8);border:3px solid #1d1029;border-radius:10px;padding:2px 12px;font-size:16px;box-shadow:0 3px 0 #1d1029}
+.lv-badge::before{content:"SEVİYE "}
+.road-card{position:relative;width:230px;border-radius:16px;border:3px solid #1d1029;background:linear-gradient(#ffcf4d,#e8960c);box-shadow:0 5px 0 #1d1029;padding:8px 12px;font:inherit;color:#fff;text-align:left;text-shadow:0 2px 0 #1d1029}
+.rc-top{display:flex;justify-content:space-between;align-items:baseline;font-size:15px}.rc-top b{font-weight:400}
+.rc-top span{font-size:12px}
+.rc-bar{height:12px;border-radius:6px;background:#1d1029;margin-top:6px;overflow:hidden}
+.rc-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#fff3b0,#fff);border-radius:6px;transition:width .6s}
+
+/* bohça */
+#s-bohca.show{display:block}
+.bx-stage{position:absolute;inset:60px 0 90px 0;display:flex;align-items:center;justify-content:center}
+#bxImg{position:relative;height:min(52vh,260px);cursor:pointer;filter:drop-shadow(0 14px 20px rgba(0,0,0,.6));animation:float 2.2s ease-in-out infinite;z-index:2}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+#bxImg.shake{animation:shake .12s linear infinite}
+@keyframes shake{0%{transform:translate(-6px,0) rotate(-6deg) scale(1.05)}50%{transform:translate(6px,-4px) rotate(6deg) scale(1.1)}100%{transform:translate(-6px,0) rotate(-6deg) scale(1.05)}}
+#bxImg.burst{animation:burstOut .5s ease-out forwards}
+@keyframes burstOut{0%{transform:scale(1.15)}40%{transform:scale(1.35)}100%{transform:scale(.9) translateY(30px);opacity:.35}}
+.rays{position:absolute;width:min(110vh,620px);height:min(110vh,620px);border-radius:50%;background:repeating-conic-gradient(rgba(255,224,102,.35) 0 10deg,transparent 10deg 20deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);animation:spin 9s linear infinite;opacity:0;transition:opacity .4s}
+.rays.on{opacity:1}
+.rays.small{width:420px;height:420px;opacity:1;position:absolute;z-index:0}
+.bx-reward{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0;transform:scale(.2) translateY(60px);pointer-events:none}
+.bx-reward.on{animation:rewardIn .7s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes rewardIn{to{opacity:1;transform:scale(1) translateY(-20px)}}
+.bx-reward img{height:min(30vh,150px);filter:drop-shadow(0 0 24px rgba(255,224,102,.9))}
+.bx-reward b{font-size:48px;color:#ffe066;font-weight:400;text-shadow:0 4px 0 #1d1029,3px 0 0 #1d1029,-3px 0 0 #1d1029}
+.bx-reward span{font-size:20px;text-shadow:0 2px 0 #1d1029}
+.bx-hint{position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:20px;animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.bx-btns{position:absolute;bottom:22px;left:0;right:0}
+.flash{position:fixed;inset:0;background:#fff;z-index:70;pointer-events:none;animation:flash .5s ease-out forwards}
+@keyframes flash{from{opacity:.95}to{opacity:0}}
+
+/* meydan yolu */
+#s-road.show,#s-quests.show{display:block}
+.road{position:absolute;top:80px;left:0;right:0;bottom:16px;overflow-x:auto;overflow-y:hidden;display:flex;align-items:center;gap:0;padding:0 40px}
+.rnode{position:relative;flex:0 0 150px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.rnode::before{content:"";position:absolute;top:96px;left:-50%;right:50%;height:10px;background:#1d1029;z-index:0}
+.rnode.reach::before{background:linear-gradient(90deg,#ffe066,#ffb02e)}
+.rnode:first-child::before{display:none}
+.rcard{position:relative;z-index:1;width:120px;height:130px;border-radius:16px;border:3px solid #1d1029;background:linear-gradient(#3d2a6b,#2a1b4d);box-shadow:0 5px 0 #1d1029;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rnode.reach .rcard{background:linear-gradient(#ffcf4d,#e8960c)}
+.rnode.claimed .rcard{background:linear-gradient(#3e8e57,#24603a);opacity:.8}
+.rcard img{height:62px}
+.rcard b{font-size:22px;font-weight:400;text-shadow:0 2px 0 #1d1029}
+.rneed{display:flex;align-items:center;gap:4px;font-size:16px;background:#1d1029;border-radius:10px;padding:2px 10px;z-index:1}
+.rneed img{width:20px}
+.rnode .btn{padding:6px 16px;font-size:16px}
+.rnode .ok{font-size:22px;color:#7ee081}
+.rnode .lock{font-size:18px;opacity:.6}
+
+/* görevler */
+.quests{position:absolute;top:80px;left:50%;transform:translateX(-50%);width:min(92vw,640px);display:flex;flex-direction:column;gap:10px}
+.quest{display:flex;align-items:center;gap:14px;background:linear-gradient(#3d2a6b,#2a1b4d);border:3px solid #1d1029;border-radius:16px;padding:10px 14px;box-shadow:0 5px 0 #1d1029}
+.quest.done{opacity:.55}
+.quest .qi{font-size:30px}
+.quest .qt{flex:1}
+.quest .qt b{font-weight:400;font-size:18px;display:block}
+.qbar{height:14px;border-radius:7px;background:#1d1029;margin-top:6px;overflow:hidden;position:relative}
+.qbar i{display:block;height:100%;background:linear-gradient(90deg,#5fd67a,#a8f07a)}
+.qbar span{position:absolute;inset:0;font-size:11px;text-align:center;line-height:14px;font-family:system-ui;font-weight:800}
+.qrw{display:flex;flex-direction:column;align-items:center;min-width:70px}
+.qrw img{height:40px}
+.qrw b{font-weight:400}
+.quest .btn{padding:8px 16px;font-size:16px}
+.q-foot{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:system-ui;opacity:.6;font-size:13px}
+
+/* ödül penceresi */
+.reward-pop{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;animation:rewardIn2 .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes rewardIn2{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.reward-pop img{height:150px;z-index:1;filter:drop-shadow(0 0 24px rgba(255,224,102,.9))}
+.reward-pop b{font-size:50px;color:#ffe066;font-weight:400;z-index:1;text-shadow:0 4px 0 #1d1029,3px 0 0 #1d1029,-3px 0 0 #1d1029}
+.reward-pop span{font-size:20px;z-index:1}
+.reward-pop .btn{z-index:1;margin-top:8px}
+.char-detail .lvrow{display:flex;align-items:center;gap:10px;margin:6px 0 2px}
+.char-detail .lvrow .lv-badge{position:static;transform:none}
+.btn .cost{display:inline-flex;align-items:center;gap:4px;margin-left:8px}
+.btn .cost img{width:24px}
+@media (max-height:420px){.home-left{grid-template-columns:repeat(2,74px);gap:7px}.tile .emo{font-size:26px}.road-card{width:200px}.pill{font-size:16px;padding:3px 10px 3px 4px}.pill img{width:24px;height:24px}.topbar .home-logo{height:40px}}
+.btn.green-up{background:linear-gradient(#6fe08a,#239b45);width:100%;margin-top:10px}
+.r-trophy img.ri{width:28px;vertical-align:middle}

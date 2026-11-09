@@ -93,6 +93,10 @@ export function sfx(name, v = 1) {
     case 'drink':    for (let i = 0; i < 4; i++) osc('sine', 500 + i * 120, t + i * 0.07, 0.1, 0.15, 900 + i * 100); break;
     case 'boost':    osc('sawtooth', 300, t, 0.3, 0.1, 900); osc('sine', 600, t + 0.1, 0.3, 0.12, 1400); noise(t, 0.25, 0.2, 'highpass', 3000); break;
     case 'flap':     for (let i = 0; i < 4; i++) noise(t + i * 0.06, 0.05, 0.25, 'bandpass', 900, 600, 2); break;
+    case 'shake':    osc('triangle', 180 + v * 120, t, 0.18, 0.2, 260 + v * 160); noise(t, 0.15, 0.25, 'bandpass', 500 + v * 300, null, 2); break;
+    case 'burst':    noise(t, 0.6, 0.7, 'highpass', 1200, 6000, 0.7); osc('sine', 220, t, 0.5, 0.4, 880); [523, 659, 784, 1046, 1318].forEach((f, i) => osc('triangle', f, t + 0.08 + i * 0.05, 0.35, 0.1)); break;
+    case 'coin':     osc('square', 1318, t, 0.06, 0.07); osc('square', 1760, t + 0.05, 0.12, 0.07); break;
+    case 'upgrade':  [392, 523, 659, 784, 1046].forEach((f, i) => { osc('sawtooth', f, t + i * 0.06, 0.2, 0.06); osc('triangle', f * 2, t + i * 0.06, 0.25, 0.06); }); break;
     case 'lose': [440, 415.3, 392, 311.13].forEach((f, i) => osc('triangle', f, t + i * 0.22, 0.4, 0.13)); break;
   }
 }

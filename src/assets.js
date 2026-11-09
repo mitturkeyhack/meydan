@@ -4,6 +4,7 @@ const NAMES = [
   'st_spice', 'st_lamp', 'st_sacks', 'bush_carpet',
   'pr_tea', 'pr_simit', 'pr_tomato', 'pr_semaver',
   'ic_trophy', 'ic_gaz', 'md_duel', 'md_simit', 'md_siege', 'logo', 'floor', 'bg_bazaar',
+  'pad_ocak', 'pad_cesme', 'it_bohca', 'it_bohca_open', 'it_akce', 'it_nazar',
 ];
 export const IMG = {};
 export const url = (n) => 'assets/' + n + '.webp';
