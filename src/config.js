@@ -11,27 +11,27 @@ export const WIN_ROUNDS = 2;
 export const CHARS = {
   cayci: {
     id: 'cayci', name: 'Çaycı Abi', role: 'Yakın Dövüşçü', rarity: 'Efsane',
-    color: '#e8473b', hp: 4200, speed: 250, reload: 1.35,
+    color: '#e8473b', hp: 4200, speed: 275, reload: 1.3, quote: 'Çaylar benden!',
     lore: 'Mahallenin en hızlı çaycısı. Tepsisi hiç boş kalmaz, bardakları hiç ıskalamaz.',
     attack: { name: 'Sıcak Çay', desc: 'Üç bardak sıcak çayı yelpaze gibi fırlatır.',
-      type: 'spread', count: 3, spread: 0.42, dmg: 440, range: 390, speed: 820, r: 15, proj: 'tea' },
+      type: 'spread', count: 3, spread: 0.42, dmg: 440, range: 390, speed: 900, r: 15, proj: 'tea' },
     super: { name: 'Semaver Patlatma', desc: 'Kaynayan semaveri fırlatır. Patlar ve yeri bir süre yakar.',
       type: 'lobBlast', dmg: 1400, radius: 135, range: 520, dur: 0.7, burn: { dps: 380, time: 2.6 }, proj: 'semaver' },
     superHits: 7,
   },
   simitci: {
     id: 'simitci', name: 'Simitçi', role: 'Nişancı', rarity: 'Destansı',
-    color: '#f2a43a', hp: 3200, speed: 240, reload: 1.15,
+    color: '#f2a43a', hp: 3200, speed: 265, reload: 1.1, quote: 'Simiiit! Taze simit!',
     lore: 'Sabah ezanından önce fırından çıkar. Simitleri duvardan seker, hedefi şaşırtır.',
     attack: { name: 'Susamlı Simit', desc: 'Uzağa giden ve duvardan bir kez seken simit atar.',
-      type: 'bounce', count: 1, dmg: 980, range: 650, speed: 980, r: 16, bounces: 1, proj: 'simit' },
+      type: 'bounce', count: 1, dmg: 980, range: 650, speed: 1050, r: 16, bounces: 1, proj: 'simit' },
     super: { name: 'Tepsi Çevirme', desc: 'Tepsiyi çevirip her yöne 12 simit saçar.',
       type: 'radial', count: 12, dmg: 650, range: 470, speed: 860, r: 15, bounces: 1, proj: 'simit' },
     superHits: 4,
   },
   kel: {
     id: 'kel', name: 'Keloğlan', role: 'Suikastçı', rarity: 'Efsane',
-    color: '#4bbf5a', hp: 4600, speed: 275, reload: 1.0,
+    color: '#4bbf5a', hp: 4600, speed: 300, reload: 1.0, quote: 'Ben Keloğlan\'ım, pes etmem!',
     lore: 'Masallardan çıkıp meydana indi. Kurnaz, hızlı ve hiç pes etmez.',
     attack: { name: 'Değnek Darbesi', desc: 'Kısa mesafede değneğini savurur, çok sert vurur.',
       type: 'spread', count: 3, spread: 0.6, dmg: 620, range: 190, speed: 1100, r: 20, proj: 'swing' },
@@ -41,7 +41,7 @@ export const CHARS = {
   },
   teyze: {
     id: 'teyze', name: 'Pazarcı Teyze', role: 'Topçu', rarity: 'Destansı',
-    color: '#a35bd6', hp: 3000, speed: 230, reload: 1.6,
+    color: '#a35bd6', hp: 3000, speed: 255, reload: 1.5, quote: 'Taze bunlar, taze!',
     lore: 'Pazarın kraliçesi. "Taze bunlar!" diye bağırınca kimse yerinde duramaz.',
     attack: { name: 'Domates Yağmuru', desc: 'Duvarların üstünden domates atar, düştüğü yer patlar.',
       type: 'lob', dmg: 950, radius: 72, range: 560, dur: 0.65, proj: 'tomato' },
@@ -61,15 +61,15 @@ export const COMING = [
 ];
 
 // ===== Haritalar =====
-// # duvar  b çalı/halı  1 2 doğma noktası  . zemin
+// # duvar (süper güçle kırılır)  b çalı/halı  f çeşme (can)  c çay ocağı (hız)  1 2 doğma noktası  . zemin
 // Üst yarı + orta satır yazılır; alt yarı 180° döndürülerek simetrik üretilir.
 const KAPALI_TOP = [
   '1......bbb.......##......',
   '.......bbb.......##..bb..',
   '..##..........b......bb..',
-  '..##....###...b..........',
+  '..##....###...b.....f....',
   '........#.........###....',
-  'bb......#....bb..........',
+  'bb..c...#....bb..........',
   'bb...........bb.....##...',
 ];
 const KAPALI_MID = '....##.....bbb.....##....';

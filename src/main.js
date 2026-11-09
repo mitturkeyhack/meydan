@@ -119,7 +119,9 @@ function startBot() {
   const others = CHAR_ORDER.filter(c => c !== state.char);
   const bc = others[Math.floor(Math.random() * others.length)];
   const names = ['Mahallenin Delisi', 'Bakkal Cemil', 'Seyyar Ramazan', 'Kahveci Osman', 'Kırtasiyeci Ayşe', 'Fırıncı Hasan'];
-  startGame({ mode: 'bot', mapId: 'kapalicarsi', me: { name: state.name, char: state.char }, opp: { name: '🤖 ' + names[Math.floor(Math.random() * names.length)], char: bc }, botLevel: Math.min(3, 1 + Math.floor(state.trophies / 60)) });
+  const lvl = Math.max(0, Math.min(3, +store.get('meydan_botlvl', '0') || 0));
+  const lvlName = ['Çırak', 'Kalfa', 'Usta', 'Ağa'][lvl];
+  startGame({ mode: 'bot', mapId: 'kapalicarsi', me: { name: state.name, char: state.char }, opp: { name: `🤖 ${names[Math.floor(Math.random() * names.length)]} (${lvlName})`, char: bc }, botLevel: lvl });
 }
 async function quickMatch() {
   state.lastMode = 'quick';
@@ -160,7 +162,7 @@ async function onMatchEnd(r, opts) {
     $('rTitle').classList.toggle('lose', !r.won);
     $('rScore').textContent = `${r.scores[0]} - ${r.scores[1]}` + (r.forfeit ? ' (rakip ayrıldı)' : '');
     const ch = CHARS[state.char]; $('rHero').src = url('ch_' + ch.id);
-    const rh = $('rHero').parentElement; rh.style.setProperty('--c', ch.color); rh.classList.toggle('lose', !r.won);
+    const rh = $('rHero').parentElement; rh.style.setProperty('--c', ch.color); rh.classList.toggle('lose', !r.won); $('rHero').classList.toggle('dance', r.won);
     show('s-result');
     if (opts.mode === 'net') {
       $('rTrophy').textContent = '🏆 ...';
@@ -168,7 +170,11 @@ async function onMatchEnd(r, opts) {
         const res = await net.report(r.won, state.char, r.opp);
         if (res) { state.trophies = res.trophies; store.set('meydan_trophies', res.trophies); $('rTrophy').textContent = `🏆 ${res.delta >= 0 ? '+' : ''}${res.delta}  (${res.trophies})`; }
       } catch (e) { $('rTrophy').textContent = '🏆 kaydedilemedi'; }
-    } else $('rTrophy').textContent = 'Antrenman maçı · kupa değişmez';
+    } else {
+      const lvl = Math.max(0, Math.min(3, (+store.get('meydan_botlvl', '0') || 0) + (r.won ? 1 : -1)));
+      store.set('meydan_botlvl', String(lvl));
+      $('rTrophy').textContent = 'Antrenman · sıradaki bot: ' + ['Çırak', 'Kalfa', 'Usta', 'Ağa'][lvl];
+    }
     refreshTop();
   }, 900);
 }

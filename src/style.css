@@ -160,3 +160,8 @@ input{font:inherit;font-size:22px;padding:10px 14px;border-radius:12px;border:3p
 .r-hero img{height:94%;object-fit:contain}
 .r-hero.lose img{filter:grayscale(.8) brightness(.7)}
 .char-detail .big{float:right;height:120px;margin:-4px -4px 0 6px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+
+.r-hero img.dance{animation:halay .5s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes halay{0%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(0) translateY(-8%)}100%{transform:rotate(7deg) translateY(0)}}
+.r-title:not(.lose){animation:pop .5s cubic-bezier(.2,1.6,.4,1),glow 1.2s ease-in-out infinite alternate}
+@keyframes glow{from{filter:drop-shadow(0 0 0 #ffe066)}to{filter:drop-shadow(0 0 18px #ffe066)}}

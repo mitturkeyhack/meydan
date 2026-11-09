@@ -88,6 +88,11 @@ export function sfx(name, v = 1) {
       osc('triangle', 1174.66, t + 0.7, 0.9, 0.14); noise(t + 0.7, 0.8, 0.15, 'highpass', 6000);
       break;
     }
+    case 'vs':       noise(t, 0.5, 0.5, 'bandpass', 200, 4000, 1); osc('sawtooth', 110, t + 0.35, 0.5, 0.2, 55); noise(t + 0.35, 0.4, 0.5, 'lowpass', 1500, 80); osc('square', 220, t + 0.4, 0.25, 0.08); break;
+    case 'crash':    noise(t, 0.45, 0.8, 'lowpass', 3000, 200, 0.8); for (let i = 0; i < 5; i++) osc('triangle', 300 + Math.random() * 900, t + i * 0.04, 0.08, 0.12, 120); osc('sine', 90, t, 0.3, 0.5, 40); break;
+    case 'drink':    for (let i = 0; i < 4; i++) osc('sine', 500 + i * 120, t + i * 0.07, 0.1, 0.15, 900 + i * 100); break;
+    case 'boost':    osc('sawtooth', 300, t, 0.3, 0.1, 900); osc('sine', 600, t + 0.1, 0.3, 0.12, 1400); noise(t, 0.25, 0.2, 'highpass', 3000); break;
+    case 'flap':     for (let i = 0; i < 4; i++) noise(t + i * 0.06, 0.05, 0.25, 'bandpass', 900, 600, 2); break;
     case 'lose': [440, 415.3, 392, 311.13].forEach((f, i) => osc('triangle', f, t + i * 0.22, 0.4, 0.13)); break;
   }
 }
