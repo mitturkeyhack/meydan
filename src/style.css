@@ -266,3 +266,4 @@ button.pill{cursor:pointer}
 @media (max-height:420px){.home-left{grid-template-columns:repeat(2,74px);gap:7px}.tile .emo{font-size:26px}.road-card{width:200px}.pill{font-size:16px;padding:3px 10px 3px 4px}.pill img{width:24px;height:24px}.topbar .home-logo{height:40px}}
 .btn.green-up{background:linear-gradient(#6fe08a,#239b45);width:100%;margin-top:10px}
 .r-trophy img.ri{width:28px;vertical-align:middle}
+#heroCv{position:absolute;inset:-12% -20% 0 -20%;width:140%;height:112%;touch-action:none;cursor:grab}

@@ -3,6 +3,7 @@ import { T, MAX_AMMO, ROUND_TIME, TOZ_START, WIN_ROUNDS, CHARS, MAPS, LEVEL_BONU
 import { drawChar, drawShadow, drawTeaGlass, drawSimit, drawTomato, drawSemaver, rr, circ, ell, fs, grad, OUT } from './art.js';
 import { sfx, music } from './audio.js';
 import { IMG, whiteOf, sized } from './assets.js';
+import { hasModel, drawChar3D, Anim3D } from './char3d.js';
 
 const SPR_H = { cayci: 112, simitci: 118, kel: 112, teyze: 108 };
 const WALL_IMG = ['st_spice', 'st_lamp', 'st_sacks'];
@@ -36,6 +37,7 @@ export class Game {
     this.parts = []; this.nums = []; this.projs = []; this.zones = []; this.timers = [];
     this.shake = 0; this.banner = null; this.cam = { x: this.me.x, y: this.me.y };
     this.netT = 0; this.lastRecv = performance.now(); this.ended = false;
+    try { this.use3d = localStorage.getItem('meydan_3d') !== '0'; } catch (e) { this.use3d = true; }
     this.bot = this.mode === 'bot' ? new Bot(this, this.op, this.me, opts.botLevel ?? 1) : null;
     this.initAmbient();
     this.resize();
@@ -205,6 +207,7 @@ export class Game {
     const spec = { ...base, dmg: Math.round(base.dmg * (p.dmgMul || 1)), burn: base.burn ? { ...base.burn, dps: base.burn.dps * (p.dmgMul || 1) } : null };
     const ox = origin ? origin.x : p.x, oy = origin ? origin.y : p.y;
     p.lastAtk = this.t; p.aim = ang; p.atkT = this.t;
+    if (p.anim) { if (isSup) p.anim.sup = this.t; else { p.anim.atk = this.t; p.anim.hand = p.anim.hand === 'R' ? (p.char === 'kel' ? 'L' : 'R') : 'R'; } }
     const gazPer = isSup ? 0 : 1 / p.c.superHits;
     const near = p === this.me ? 1 : 0.7;
     const sx = ox + Math.cos(ang) * 26, sy = oy + Math.sin(ang) * 26 - 4;
@@ -272,13 +275,13 @@ export class Game {
   hitTarget(p, dmg, owner, gaz, fx, fy) {
     if (this.isAuth(p)) this.damage(p, dmg, owner, gaz);
     else { // tahmini vuruş görseli (karşı taraf asıl hasarı kendisi hesaplar)
-      p.flash = 0.12; this.dmgNum(p.x, p.y - 70, dmg, '#fff'); sfx('hit', 0.9); this.sparks(p.x, p.y - 30, owner.c.color, 8);
+      p.flash = 0.12; if (p.anim) p.anim.hurt = this.t; this.dmgNum(p.x, p.y - 70, dmg, '#fff'); sfx('hit', 0.9); this.sparks(p.x, p.y - 30, owner.c.color, 8);
       if (this.mode === 'bot') this.addGaz(owner, gaz);
     }
   }
   damage(p, dmg, owner, gaz) {
     if (!p.alive || this.phase !== 'play') return;
-    p.hp -= dmg; p.lastHurt = this.t; p.flash = 0.12;
+    p.hp -= dmg; p.lastHurt = this.t; p.flash = 0.12; if (p.anim) p.anim.hurt = this.t;
     this.dmgNum(p.x, p.y - 70, dmg, p === this.me ? '#ff6b6b' : '#fff');
     this.sparks(p.x, p.y - 30, p === this.me ? '#ff4d4d' : owner ? owner.c.color : '#b7e36b', 9);
     if (p === this.me) { sfx('hurt'); this.shake = Math.max(this.shake, 4); this.hurtFx = 0.35; }
@@ -391,6 +394,7 @@ export class Game {
     // ortak oyuncu güncellemesi
     for (const p of this.players) {
       p.flash = Math.max(0, p.flash - dt);
+      if (hasModel(p.char)) { if (!p.anim) p.anim = new Anim3D(); p.anim.update(dt, p.moving && !p.jump, p.aim, this.t); }
       if (p.moving) { p.walk += dt * 13; p.stepT += dt; if (p.stepT > 0.16) { p.stepT = 0; this.parts.push({ x: p.x + rand(-8, 8), y: p.y, z: 0, vx: rand(-20, 20), vy: rand(-10, 0), vz: 0, g: 0, life: 0.4, max: 0.4, size: rand(4, 7), col: 'rgba(150,120,80,', type: 'smoke' }); } }
       if (!p.alive) continue;
       p.inBush = this.tile(p.x, p.y) === 2;
@@ -872,7 +876,12 @@ export class Game {
     if (p.gaz >= 1) { ctx.strokeStyle = `rgba(255,224,102,${0.5 + 0.5 * Math.sin(this.t * 8)})`; ctx.lineWidth = 4; ell(ctx, p.x, p.y, 32, 14); ctx.stroke(); }
     const yy = p.y - (p.z || 0);
     const img = IMG['ch_' + p.char];
-    if (!img) {
+    if (p.anim && hasModel(p.char) && this.use3d) {
+      const st = p.anim.state({ jump: !!p.jump, win: this.phase === 'over' && p.alive && this.scores[p.side] >= WIN_ROUNDS });
+      const t0 = performance.now();
+      drawChar3D(ctx, p.char, p.x, yy + 2, SPR_H[p.char] || 112, { yaw: p.anim.yaw, state: st, flash: p.flash > 0 ? Math.min(1, p.flash / 0.12) * 0.8 : 0, dpr: this.k * (this.q >= 2 ? 1 : 0.8) });
+      this.t3d = (this.t3d || 0) * 0.95 + (performance.now() - t0) * 0.05;
+    } else if (!img) {
       drawChar(ctx, p.char, p.x, yy, { aim: p.aim, walk: p.walk, moving: p.moving, s: CS, t: this.t });
       if (p.flash > 0) { ctx.globalAlpha = p.flash / 0.12 * 0.7; ctx.fillStyle = '#fff'; circ(ctx, p.x, yy - 46 * CS, 22); ctx.fill(); ell(ctx, p.x, yy - 22 * CS, 16, 18); ctx.fill(); }
     } else {
@@ -1066,6 +1075,10 @@ export class Game {
     // otomatik kalite: kare çok uzun sürüyorsa çözünürlüğü ve süsleri azalt
     this.ft = this.ft * 0.95 + Math.max(dt * 1000, performance.now() - t0) * 0.05;
     this.qT += dt;
+    if (this.qT > 3 && this.use3d && this.q === 0 && this.ft > 24 && this.t3d > 7) {
+      this.use3d = false; this.qT = 0; this.ft = 16;
+      try { localStorage.setItem('meydan_3d', '0'); } catch (e) {}
+    }
     if (this.qT > 2 && this.ft > 22 && this.q > 0) {
       this.q--; this.qT = 0; this.ft = 16;
       try { localStorage.setItem('meydan_q', String(this.q)); } catch (e) {}

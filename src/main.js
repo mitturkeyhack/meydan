@@ -1,6 +1,7 @@
 // ===== MEYDAN — menüler ve uygulama akışı =====
 import { CHARS, CHAR_ORDER, COMING, ROAD, REWARD, MAX_LEVEL, upgradeCost, LEVEL_BONUS } from './config.js';
 import { loadAssets, url } from './assets.js';
+import { loadModel, hasModel, drawChar3D, Anim3D } from './char3d.js';
 import { initAudio, sfx, music, setSfx, setMusic, audioState } from './audio.js';
 import { Input } from './input.js';
 import { Game } from './game.js';
@@ -39,7 +40,24 @@ document.addEventListener('pointerdown', () => { initAudio(); if (!game && docum
 document.addEventListener('click', (e) => { if (e.target.closest('button')) initAudio(); }, { capture: true });
 
 // ---------- ana menü kahramanı ----------
-let shownHero = null;
+let shownHero = null, hero3d = null;
+const MODELS_3D = ['cayci'];
+function heroLoop() {
+  const im = $('heroImg'), cv = $('heroCv'), ch = state.char;
+  if (!hasModel(ch) || !document.getElementById('s-home').classList.contains('show')) { cv.style.display = 'none'; im.style.display = ''; hero3d = null; return; }
+  cv.style.display = ''; im.style.display = 'none';
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = cv.clientWidth * dpr, H = cv.clientHeight * dpr;
+  if (cv.width !== W) { cv.width = W; cv.height = H; }
+  const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, W, H);
+  if (!hero3d) hero3d = { a: new Anim3D(), last: performance.now(), spin: 0, drag: 0 };
+  const now = performance.now(), dt = Math.min(0.05, (now - hero3d.last) / 1000); hero3d.last = now;
+  hero3d.a.t += dt; hero3d.spin = hero3d.spin * 0.92;
+  const yaw = Math.sin(hero3d.a.t * 0.5) * 0.45 + hero3d.drag;
+  const st = { t: hero3d.a.t, runW: 0, atkK: -1, supK: -1, hurtK: -1 };
+  const k = (hero3d.a.t - (hero3d.tapT ?? -9)) / 0.7; if (k >= 0 && k <= 1) st.supK = k;
+  drawChar3D(ctx, ch, W / 2, H * 0.8, H * 0.7, { yaw, state: st, dpr: 1, pitch: 0.28, outline: 0.009 });
+  requestAnimationFrame(heroLoop);
+}
 function startHeroAnim() {
   const ch = CHARS[state.char], im = $('heroImg');
   $('hHero').textContent = ch.name; $('hRole').textContent = ch.role;
@@ -49,6 +67,7 @@ function startHeroAnim() {
     setTimeout(() => im.classList.remove('swap'), 500);
   }
   $('hAvatar').style.backgroundImage = `url(${url('ch_' + ch.id)})`;
+  if (hasModel(ch.id) && !hero3d) { hero3d = { a: new Anim3D(), last: performance.now(), spin: 0, drag: 0 }; requestAnimationFrame(heroLoop); }
 }
 function stopHeroAnim() {}
 const levelOf = (c) => Math.max(1, (state.p && state.p.levels && +state.p.levels[c]) || 1);
@@ -259,9 +278,10 @@ $('sCancel').onclick = () => { sfx('click'); cancelSearch(); show('s-home'); };
 $('sBot').onclick = () => { sfx('click'); cancelSearch(); startBot(); };
 $('rHome').onclick = () => { sfx('click'); show('s-home'); };
 $('rAgain').onclick = () => { sfx('click'); if (state.lastMode === 'bot') startBot(); else if (state.lastMode === 'friend') { show('s-friend'); } else quickMatch(); };
-$('bSettings').onclick = () => { sfx('click'); const a = audioState(); $('optSfx').checked = a.sfxOn; $('optMusic').checked = a.musicOn; $('optVer').textContent = 'Sürüm ' + VERSION; $('m-settings').classList.add('show'); };
+$('bSettings').onclick = () => { sfx('click'); const a = audioState(); $('optSfx').checked = a.sfxOn; $('optMusic').checked = a.musicOn; $('optVer').textContent = 'Sürüm ' + VERSION; try { $('opt3d').checked = localStorage.getItem('meydan_3d') !== '0'; } catch (_) {} $('m-settings').classList.add('show'); };
 $('optSfx').onchange = (e) => setSfx(e.target.checked);
 $('optMusic').onchange = (e) => setMusic(e.target.checked);
+$('opt3d').onchange = (e) => { try { localStorage.setItem('meydan_3d', e.target.checked ? '1' : '0'); localStorage.setItem('meydan_q', '2'); } catch (_) {} };
 $('optName').onclick = () => { $('m-settings').classList.remove('show'); $('nameIn').value = state.name; show('s-name'); };
 $('bQuit').onclick = () => { if (!game) return; $('qInfo').textContent = game.mode === 'net' ? 'Çıkarsan maçı kaybetmiş sayılırsın.' : 'Antrenmandan çıkılacak.'; $('m-quit').classList.add('show'); };
 $('qYes').onclick = () => {
@@ -300,7 +320,8 @@ document.querySelectorAll('.screen').forEach(el => {
   el.style.backgroundImage = `linear-gradient(rgba(29,16,41,${dark}), rgba(29,16,41,.85)), url(${url('bg_bazaar')})`;
 });
 const t0 = performance.now();
-loadAssets((k) => { $('loadBar').style.width = Math.round(k * 100) + '%'; }).then(() => {
+const models3d = Promise.all(MODELS_3D.map(id => loadModel(id).catch(e => console.warn('3D model yüklenemedi', id, e))));
+loadAssets((k) => { $('loadBar').style.width = Math.round(k * 90) + '%'; }).then(() => models3d).then(() => {
   setTimeout(() => {
     refreshTop();
     if (!state.name) show('s-name'); else { show('s-home'); connect(); }
@@ -400,3 +421,12 @@ function renderQuests() {
     el.appendChild(d);
   });
 }
+
+// ana menüde kahramana dokununca süper hareketini yapsın, sürükleyince dönsün
+(() => {
+  const cv = document.getElementById('heroCv'); let sx = null, base = 0;
+  cv.addEventListener('pointerdown', (e) => { sx = e.clientX; base = hero3d ? hero3d.drag || 0 : 0; });
+  cv.addEventListener('pointermove', (e) => { if (sx !== null && hero3d) hero3d.drag = base + (e.clientX - sx) * 0.012; });
+  const up = (e) => { if (sx !== null && hero3d && Math.abs(e.clientX - sx) < 8) { hero3d.tapT = hero3d.a.t; sfx('super'); } sx = null; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { sx = null; });
+})();
