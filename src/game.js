@@ -361,7 +361,8 @@ export class Game {
     const evs = inp.poll();
     inp.superReady = me.gaz >= 1 && this.phase === 'play';
     // zamanlayıcılar
-    for (let i = this.timers.length - 1; i >= 0; i--) if (this.t >= this.timers[i].at) { const f = this.timers[i].fn; this.timers.splice(i, 1); f(); }
+    const due = this.timers.filter(tm => this.t >= tm.at);
+    if (due.length) { this.timers = this.timers.filter(tm => !due.includes(tm)); for (const tm of due) tm.fn(); }
     if (this.phase === 'intro') { this.introT += dt; if (this.introT >= 2.8) { this.phase = 'count'; this.countT = 3.2; this.lastCount = 4; } }
     if (this.phase === 'count') {
       this.countT -= dt; const c = Math.ceil(this.countT - 0.2);

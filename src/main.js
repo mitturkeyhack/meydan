@@ -282,10 +282,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) music
 
 // ---------- ana döngü ----------
 let lt = performance.now();
+let errCount = 0;
 function loop(n) {
+  requestAnimationFrame(loop);   // önce bir sonraki kareyi iste: bir hata olsa bile oyun donmasın
   const dt = Math.min(0.05, (n - lt) / 1000); lt = n;
-  if (game) game.frame(dt);
-  requestAnimationFrame(loop);
+  if (!game) return;
+  try { game.frame(dt); }
+  catch (e) { errCount++; console.error('Oyun hatası:', e); if (errCount > 30 && game) { const g = game; game = null; toast('Bir hata oluştu, ana menüye dönülüyor'); try { g.ended = true; } catch (_) {} show('s-home'); errCount = 0; } }
 }
 requestAnimationFrame(loop);
 
