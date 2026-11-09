@@ -2,12 +2,13 @@
 import { T, MAX_AMMO, ROUND_TIME, TOZ_START, WIN_ROUNDS, CHARS, MAPS, LEVEL_BONUS } from './config.js';
 import { drawChar, drawShadow, drawTeaGlass, drawSimit, drawTomato, drawSemaver, rr, circ, ell, fs, grad, OUT } from './art.js';
 import { sfx, music } from './audio.js';
-import { IMG, whiteOf } from './assets.js';
+import { IMG, whiteOf, sized } from './assets.js';
 
 const SPR_H = { cayci: 112, simitci: 118, kel: 112, teyze: 108 };
 const WALL_IMG = ['st_spice', 'st_lamp', 'st_sacks'];
 const PROJ_IMG = { tea: ['pr_tea', 34], simit: ['pr_simit', 36], tomato: ['pr_tomato', 30], semaver: ['pr_semaver', 46] };
-function drawImgC(ctx, img, x, y, size, rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); const h = size * img.height / img.width; ctx.drawImage(img, -size / 2, -h / 2, size, h); ctx.restore(); }
+let K = 1;
+function drawImgC(ctx, img, x, y, size, rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); const h = size * img.height / img.width; ctx.drawImage(sized(img, size * K, h * K), -size / 2, -h / 2, size, h); ctx.restore(); }
 
 const PR = 22;          // oyuncu çarpışma yarıçapı
 const CS = 0.74;        // karakter çizim ölçeği
@@ -37,9 +38,9 @@ export class Game {
     this.netT = 0; this.lastRecv = performance.now(); this.ended = false;
     this.bot = this.mode === 'bot' ? new Bot(this, this.op, this.me, opts.botLevel ?? 1) : null;
     this.initAmbient();
+    this.resize();
     this.buildFloor();
     if (this.net) this.net.onMsg = (type, p) => this.onNet(type, p);
-    this.resize();
     this.startRound(1);
     this.phase = 'intro'; this.introT = 0; sfx('vs');
     music('battle');
@@ -125,7 +126,7 @@ export class Game {
   startRound(n) {
     this.round = n; this.phase = 'count'; this.countT = 3.2; this.rt = 0; this.tozDmgT = 0; this.tozWarned = false;
     this.projs = []; this.zones = []; this.timers = [];
-    if (n > 1) this.parseMap();
+    if (n > 1) { this.parseMap(); this.lightLayer = null; }
     if (this.bot) this.bot.react = 1.6;
     for (const p of this.players) { p.boostT = 0; }
     for (const p of this.players) {
@@ -332,10 +333,12 @@ export class Game {
 
   // ---------- güncelleme ----------
   resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+    if (this.q === undefined) { let q = 2; try { q = +(localStorage.getItem('meydan_q') ?? 2); } catch (e) {} this.q = Math.max(0, Math.min(2, q)); this.ft = 16; this.qT = 0; }
+    const dpr = Math.min(window.devicePixelRatio || 1, [1, 1.25, 1.5][this.q]);
     this.dpr = dpr; this.W = innerWidth; this.H = innerHeight;
     this.cv.width = Math.round(this.W * dpr); this.cv.height = Math.round(this.H * dpr);
     this.zoom = Math.min(this.W / (15.5 * T), this.H / (8.8 * T));
+    this.k = this.dpr * this.zoom;
     this.input.layout(this.W, this.H);
   }
   screenToWorld(sx, sy) { return { x: (sx - this.W / 2) / this.zoom + this.cam.x, y: (sy - this.H / 2) / this.zoom + this.cam.y }; }
@@ -568,7 +571,7 @@ export class Game {
   }
   breakWall(w) {
     const i = this.walls.indexOf(w); if (i < 0) return;
-    this.walls.splice(i, 1); this.g[w.r][w.c] = 0;
+    this.walls.splice(i, 1); this.g[w.r][w.c] = 0; if (w.img === 'st_lamp') this.lightLayer = null;
     const cx = w.c * T + T / 2, cy = w.r * T + T / 2;
     this.rubble.push({ x: cx, y: cy, img: w.img, seed: rand(0, 6) });
     const cols = w.img === 'st_spice' ? ['#d1342b', '#f2b134', '#e86f1f', '#8a4b1f'] : w.img === 'st_lamp' ? ['#2a9d8f', '#e63946', '#e9c46a', '#1d7fbf'] : ['#c9a36b', '#8a5a2b', '#e9d6a8', '#6b3b1b'];
@@ -588,7 +591,7 @@ export class Game {
       // zemin halkası
       ctx.strokeStyle = ready ? (pd.type === 'cesme' ? 'rgba(120,220,255,.8)' : 'rgba(255,170,80,.8)') : 'rgba(255,255,255,.25)'; ctx.lineWidth = 3;
       ctx.setLineDash([8, 6]); ctx.lineDashOffset = -this.t * 20; ell(ctx, x, y + 6, 34, 18); ctx.stroke(); ctx.setLineDash([]);
-      if (img) { const w = T * 1.2, h = w * img.height / img.width; ctx.save(); if (!ready) ctx.filter = 'grayscale(.8) brightness(.8)'; ctx.drawImage(img, x - w / 2, y + 14 - h, w, h); ctx.restore(); }
+      if (img) { const w = T * 1.2, h = w * img.height / img.width; ctx.drawImage(sized(img, w * this.k, h * this.k, !ready), x - w / 2, y + 14 - h, w, h); }
       else if (pd.type === 'cesme') {
         ctx.fillStyle = '#8f8a80'; ell(ctx, x, y + 4, 30, 17); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = OUT; ctx.stroke();
         ctx.fillStyle = '#cfc8b8'; ell(ctx, x, y, 30, 17); ctx.fill(); ctx.stroke();
@@ -623,7 +626,30 @@ export class Game {
     if (!b.fly) { ctx.strokeStyle = '#d9623b'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-1, -2); ctx.lineTo(-1, 1); ctx.moveTo(2, -2); ctx.lineTo(2, 1); ctx.stroke(); }
     ctx.restore();
   }
+  buildLights() {
+    const sc = 0.35, c = document.createElement('canvas'); c.width = Math.ceil(this.MW * sc); c.height = Math.ceil(this.MH * sc);
+    const ctx = c.getContext('2d'); ctx.scale(sc, sc);
+    for (const r of this.rays) {
+      const g = ctx.createLinearGradient(r.x, -T, r.x + 160, this.MH);
+      g.addColorStop(0, 'rgba(255,225,160,.14)'); g.addColorStop(1, 'rgba(255,225,160,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(r.x - r.w / 2, -T); ctx.lineTo(r.x + r.w / 2, -T); ctx.lineTo(r.x + r.w / 2 + 220, this.MH); ctx.lineTo(r.x - r.w / 2 + 220, this.MH); ctx.closePath(); ctx.fill();
+    }
+    for (const w of this.walls) if (w.img === 'st_lamp') {
+      const x = w.c * T + T / 2, y = w.r * T + T * 0.2;
+      const g = ctx.createRadialGradient(x, y, 4, x, y, T * 1.4); g.addColorStop(0, 'rgba(255,170,80,.25)'); g.addColorStop(1, 'rgba(255,120,40,0)');
+      ctx.fillStyle = g; circ(ctx, x, y, T * 1.4); ctx.fill();
+    }
+    this.lightLayer = c;
+  }
   drawLights(ctx) {
+    if (!this.lightLayer) this.buildLights();
+    ctx.save(); ctx.globalAlpha = 0.8 + 0.2 * Math.sin(this.t * 0.8);
+    ctx.drawImage(this.lightLayer, 0, 0, this.MW, this.MH);
+    ctx.globalAlpha = 1;
+    if (this.q >= 2) for (const m of this.motes) { ctx.fillStyle = `rgba(255,235,190,${0.25 + 0.2 * Math.sin(this.t * 2 + m.ph)})`; ctx.fillRect(m.x - m.s, m.y - m.z - m.s, m.s * 2, m.s * 2); }
+    ctx.restore();
+  }
+  drawLightsOld(ctx) {
     // ışık huzmeleri
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (const r of this.rays) {
@@ -690,7 +716,7 @@ export class Game {
 
   // ---------- çizim ----------
   buildFloor() {
-    const th = this.map.theme, sc = 1.5;
+    const th = this.map.theme, sc = this.q >= 2 ? 1.5 : this.q === 1 ? 1.15 : 0.9;
     const c = document.createElement('canvas'); c.width = this.MW * sc; c.height = this.MH * sc;
     const x = c.getContext('2d'); x.scale(sc, sc);
     if (IMG.floor) {
@@ -719,7 +745,7 @@ export class Game {
     this.floor = c; this.floorSc = sc;
   }
   draw() {
-    const ctx = this.ctx, th = this.map.theme, z = this.zoom, dpr = this.dpr;
+    const ctx = this.ctx, th = this.map.theme, z = this.zoom, dpr = this.dpr; K = this.k;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = th.bg; ctx.fillRect(0, 0, this.W, this.H);
     const sx = this.shake ? rand(-this.shake, this.shake) : 0, sy = this.shake ? rand(-this.shake, this.shake) : 0;
@@ -775,7 +801,7 @@ export class Game {
   drawWall(ctx, w) {
     const th = this.map.theme, x = w.c * T, y = w.r * T;
     const wimg = IMG[w.img];
-    if (wimg) { const W2 = T * 1.34, H2 = W2 * wimg.height / wimg.width; ctx.drawImage(wimg, x + T / 2 - W2 / 2, y + T + 8 - H2, W2, H2); return; }
+    if (wimg) { const W2 = T * 1.34, H2 = W2 * wimg.height / wimg.width; ctx.drawImage(sized(wimg, W2 * this.k, H2 * this.k), x + T / 2 - W2 / 2, y + T + 8 - H2, W2, H2); return; }
     const below = this.g[w.r + 1] && this.g[w.r + 1][w.c] === 1;
     // ön yüz
     if (!below) {
@@ -821,7 +847,7 @@ export class Game {
     const sway = Math.sin(this.t * 1.5 + b.v * 6) * 1.5;
     const bimg = IMG.bush_carpet;
     if (bimg) { const W2 = T * 1.36, H2 = W2 * bimg.height / bimg.width, fl = b.v > 0.5 ? -1 : 1;
-      ctx.translate(x + T / 2, y + T + 4); ctx.scale(fl * (1 + sway * 0.006), 1 - sway * 0.006); ctx.drawImage(bimg, -W2 / 2, -H2, W2, H2); ctx.restore(); return; }
+      ctx.translate(x + T / 2, y + T + 4); ctx.scale(fl * (1 + sway * 0.006), 1 - sway * 0.006); ctx.drawImage(sized(bimg, W2 * this.k, H2 * this.k), -W2 / 2, -H2, W2, H2); ctx.restore(); return; }
     // asılı / yığılı halılar
     const cols = [[th.bushA, th.bushPattern], ['#1f3b73', '#f2c14e'], ['#2f7d4f', '#f6e7c1'], ['#7d1f2a', '#e9a726']];
     for (let i = 0; i < 3; i++) {
@@ -859,8 +885,9 @@ export class Game {
       if (ak > 0) { sx *= 1 + ak * 0.1; sy *= 1 - ak * 0.07; lx = Math.cos(p.aim) * ak * 7; }
       if (p.jump) { sy *= 1.1; sx *= 0.92; rot += Math.sin(p.jump.t / p.jump.dur * Math.PI * 2) * 0.3 * flip; }
       ctx.translate(p.x + lx, yy + by); ctx.rotate(rot); ctx.scale(flip * sx, sy);
-      ctx.drawImage(img, -W / 2, -H, W, H);
-      if (p.flash > 0) { ctx.globalAlpha = (p.inBush ? 0.6 : 1) * Math.min(1, p.flash / 0.12) * 0.85; ctx.drawImage(whiteOf(img), -W / 2, -H, W, H); }
+      const sp = sized(img, W * this.k * 1.1, H * this.k * 1.1);
+      ctx.drawImage(sp, -W / 2, -H, W, H);
+      if (p.flash > 0) { ctx.globalAlpha = (p.inBush ? 0.6 : 1) * Math.min(1, p.flash / 0.12) * 0.85; ctx.drawImage(whiteOf(sp), -W / 2, -H, W, H); }
     }
     ctx.restore();
   }
@@ -1021,8 +1048,8 @@ export class Game {
     const pulse = full ? 1 + Math.sin(this.t * 8) * 0.06 : 1;
     if (IMG.ic_gaz) {
       if (full) { ctx.fillStyle = `rgba(255,224,102,${0.25 + 0.2 * Math.sin(this.t * 8)})`; circ(ctx, sx2, sy2, sb.r * 1.05); ctx.fill(); }
-      else ctx.filter = 'grayscale(1) brightness(0.55)';
-      const gs = sb.r * 1.35 * pulse; ctx.drawImage(IMG.ic_gaz, sx2 - gs / 2, sy2 - gs / 2, gs, gs); ctx.filter = 'none';
+      const gs = sb.r * 1.35 * pulse, gb = sb.r * 1.35 * this.dpr;
+      ctx.drawImage(sized(IMG.ic_gaz, gb, gb, !full), sx2 - gs / 2, sy2 - gs / 2, gs, gs);
     } else {
       circ(ctx, sx2, sy2, sb.r * 0.62 * pulse); fs(ctx, full ? grad(ctx, sx2, sy2, sb.r * 0.6, '#fff6b0', '#f5b400') : '#5a5032', 3);
       bolt(ctx, sx2, sy2, sb.r * 0.32, full ? OUT : 'rgba(255,255,255,.35)');
@@ -1031,7 +1058,19 @@ export class Game {
     const lbl = full ? 'GAZLA!' : 'GAZ %' + Math.floor(me.gaz * 100);
     ctx.strokeText(lbl, sb.x, sb.y + sb.r + 14 * u); ctx.fillStyle = full ? '#ffe066' : '#ccc'; ctx.fillText(lbl, sb.x, sb.y + sb.r + 14 * u);
   }
-  frame(dt) { this.update(dt); this.draw(); }
+  frame(dt) {
+    const t0 = performance.now();
+    this.update(dt); this.draw();
+    if (this.parts.length > 260) this.parts.splice(0, this.parts.length - 260);
+    // otomatik kalite: kare çok uzun sürüyorsa çözünürlüğü ve süsleri azalt
+    this.ft = this.ft * 0.95 + Math.max(dt * 1000, performance.now() - t0) * 0.05;
+    this.qT += dt;
+    if (this.qT > 2 && this.ft > 22 && this.q > 0) {
+      this.q--; this.qT = 0; this.ft = 16;
+      try { localStorage.setItem('meydan_q', String(this.q)); } catch (e) {}
+      this.resize(); this.buildFloor();
+    }
+  }
 }
 
 function star(ctx, x, y, r, col) {
