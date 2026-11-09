@@ -26,7 +26,7 @@ jobs:
       - name: Android projesi oluştur
         run: npx cap add android
       - name: Türk bayrağı simgesi ve açılış ekranı
-        run: npx @capacitor/assets generate --android --assetPath assets --androidSplashBackgroundColor '#e30a17' --iconBackgroundColor '#e30a17'
+        run: npx @capacitor/assets generate --android --assetPath assets --iconBackgroundColor '#e30a17' --iconBackgroundColorDark '#e30a17' --splashBackgroundColor '#e30a17' --splashBackgroundColorDark '#e30a17'
       - name: Yatay ekran, tam ekran ve sürüm numarası
         run: |
           M=android/app/src/main/AndroidManifest.xml
