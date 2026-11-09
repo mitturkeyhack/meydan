@@ -39,13 +39,28 @@ jobs:
       - name: Senkronla
         run: npx cap sync android
       - name: Sabit imza anahtarı (güncellemelerin üstüne kurulabilmesi için)
-        run: mkdir -p ~/.android && cp signing/debug.keystore ~/.android/debug.keystore
+        run: |
+          cat >> android/app/build.gradle <<'GRADLE'
+
+          android {
+              signingConfigs {
+                  debug {
+                      storeFile file("../../signing/debug.keystore")
+                      storePassword "android"
+                      keyAlias "androiddebugkey"
+                      keyPassword "android"
+                  }
+              }
+              buildTypes { debug { signingConfig signingConfigs.debug } }
+          }
+          GRADLE
       - name: APK derle
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
           cp app/build/outputs/apk/debug/app-debug.apk ../Meydan-v$VER.apk
+          keytool -printcert -jarfile ../Meydan-v$VER.apk | grep SHA256
       - name: APK'yı yükle
         uses: actions/upload-artifact@v4
         with:
